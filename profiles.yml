@@ -1,17 +1,13 @@
-
-# Minimal profile for dbt Projects on Snowflake. No passwords here.
 wcc_datahub:
   target: dev
   outputs:
     dev:
       type: snowflake
-      database: DEV_LANDING    # dbt_project.yml overrides per-folder database
-      schema: DBT_DEV          # schema must exist before deploy
+      account: VMKQKMW-PYA98707
+      user: PASIVALINGAM
       role: DBT_DEV_ROLE
-      warehouse: COMPUTE_WH
-    test:
-      type: snowflake
-      database: TEST_LANDING
-      schema: DBT_TEST
-      role: DBT_DEV_ROLE       # adjust if you use a dedicated TEST role
-      warehouse: COMPUTE_WH
+      warehouse: DBT_XS_WH
+      database: ANALYTICS_DEV
+      schema: SILVER
+      private_key_path: C:\Users\pasivalingam\rsa_key.p8
+      authenticator: SNOWFLAKE_JWT

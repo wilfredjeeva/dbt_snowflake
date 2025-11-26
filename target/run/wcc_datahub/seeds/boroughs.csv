@@ -1,0 +1,14 @@
+
+    
+    
+    
+    create table ANALYTICS_DEV.SILVER_LANDING.boroughs (borough_id integer,name text)
+  ;
+    -- dbt seed --
+    
+            insert into ANALYTICS_DEV.SILVER_LANDING.boroughs (borough_id, name) values
+            (%s,%s),(%s,%s),(%s,%s),(%s,%s),(%s,%s)
+        
+
+;
+  
