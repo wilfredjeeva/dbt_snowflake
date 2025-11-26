@@ -1,0 +1,26 @@
+
+name: wcc_datahub
+version: 1.0.0
+config-version: 2
+
+profile: wcc_datahub
+
+models:
+  wcc_datahub:
+    +on_schema_change: sync_all_columns
+    landing:
+      +database: "{{ (target.name | upper) ~ '_LANDING' }}"
+      +schema: "LANDING"
+      +materialized: view
+    bronze:
+      +database: "{{ (target.name | upper) ~ '_BRONZE_ADF' }}"
+      +schema: "BRONZE_ADF"
+      +materialized: table
+    silver:
+      +database: "{{ (target.name | upper) ~ '_SILVER' }}"
+      +schema: "SILVER"
+      +materialized: table
+    gold:
+      +database: "{{ (target.name | upper) ~ '_GOLD' }}"
+      +schema: "GOLD"
+      +materialized: view
