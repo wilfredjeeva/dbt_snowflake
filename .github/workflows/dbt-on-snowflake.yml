@@ -1,0 +1,83 @@
+
+name: dbt-on-snowflake
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "dbt target (dev/test)"
+        type: choice
+        options: [dev, test]
+        default: dev
+      selector:
+        description: "dbt selector (e.g. +models/silver/**)"
+        required: false
+        default: "+models"
+      command:
+        description: "dbt command (build/run/test)"
+        type: choice
+        options: [build, run, test]
+        default: build
+  repository_dispatch:
+    types: [adf_dbt]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Snowflake CLI (v3.13+ for dbt on Snowflake)
+      - name: Setup Snowflake CLI
+        uses: snowflakedb/snowflake-cli-action@v2
+        with:
+          cli-version: "3.13.0"
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_PRIVATE_KEY_B64: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_B64 }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+
+      - name: Resolve params
+        id: p
+        run: |
+          # prefer repository_dispatch payload if present
+          if [ -n "${{ github.event.client_payload.target }}" ]; then
+            echo "target=${{ github.event.client_payload.target }}" >> $GITHUB_OUTPUT
+          else
+            echo "target=${{ inputs.target || 'dev' }}" >> $GITHUB_OUTPUT
+          fi
+          if [ -n "${{ github.event.client_payload.selector }}" ]; then
+            echo "selector=${{ github.event.client_payload.selector }}" >> $GITHUB_OUTPUT
+          else
+            echo "selector=${{ inputs.selector || '+models' }}" >> $GITHUB_OUTPUT
+          fi
+          if [ -n "${{ github.event.client_payload.command }}" ]; then
+            echo "command=${{ github.event.client_payload.command }}" >> $GITHUB_OUTPUT
+          else
+            echo "command=${{ inputs.command || 'build' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy DBT PROJECT object
+        run: |
+          # Use external access integration if provided to allow dbt deps to pull packages
+          EAI_ARG=""
+          if [ -n "${{ secrets.DBT_EXTERNAL_ACCESS_INTEGRATION }}" ]; then
+            EAI_ARG="--external-access-integration ${{ secrets.DBT_EXTERNAL_ACCESS_INTEGRATION }}"
+          fi
+
+          # Create or update the DBT PROJECT object named 'wcc_datahub'
+          snow dbt deploy wcc_datahub --source . --profiles-dir . --default-target ${{ steps.p.outputs.target }} --force $EAI_ARG
+
+      - name: Execute dbt on Snowflake
+        run: |
+          snow dbt execute wcc_datahub ${{ steps.p.outputs.command }} --select "${{ steps.p.outputs.selector }}" --target ${{ steps.p.outputs.target }}
+
+      - name: List project versions (debug)
+        run: snow dbt list --in schema public

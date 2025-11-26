@@ -1,0 +1,11 @@
+
+version: 2
+models:
+  - name: bronze_boroughs
+    columns:
+      - name: borough_id
+        tests: [not_null, unique]
+  - name: silver_boroughs
+    columns:
+      - name: borough_id
+        tests: [not_null, unique]

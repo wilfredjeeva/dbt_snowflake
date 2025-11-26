@@ -1,0 +1,36 @@
+name: wcc_datahub
+version: 1.0.0
+config-version: 2
+
+# dbt-on-Snowflake uses this profiles.yml inside the project object
+profile: wcc_datahub
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+snapshot-paths: ["snapshots"]
+macro-paths: ["macros"]
+
+# We’ll route by folder (medallion schemas stay the same across envs)
+seeds:
+  +database: ANALYTICS_DEV # for local/dev target
+  +schema: LANDING
+
+models:
+  wcc_datahub:
+    +materialized: table
+
+    bronze:
+      +database: ANALYTICS_DEV
+      +schema: BRONZE
+      +tags: ["bronze"]
+
+    silver:
+      +database: ANALYTICS_DEV
+      +schema: SILVER
+      +tags: ["silver"]
+
+    gold:
+      +database: ANALYTICS_DEV
+      +schema: GOLD
+      +tags: ["gold"]

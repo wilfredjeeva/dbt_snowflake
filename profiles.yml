@@ -1,0 +1,13 @@
+wcc_datahub:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: VMKQKMW-PYA98707
+      user: PASIVALINGAM
+      role: DBT_DEV_ROLE
+      warehouse: DBT_XS_WH
+      database: ANALYTICS_DEV
+      schema: SILVER
+      private_key_path: C:\Users\pasivalingam\rsa_key.p8
+      authenticator: SNOWFLAKE_JWT
