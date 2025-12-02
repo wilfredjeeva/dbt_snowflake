@@ -67,4 +67,4 @@ jobs:
       - name: Execute build inside Snowflake (Dev target)
         run: |
           # 'tag:boroughs+' selects seeds + bronze + silver + gold for your Boroughs example
-          snow dbt execute -c ci "${{ env.DBT_PROJECT_NAME }}" "build --target ${{ env.DBT_TARGET }} --select tag:boroughs+"
+          snow dbt execute -c ci "${{ env.DBT_PROJECT_NAME }}" build --target "${{ env.DBT_TARGET }}" --select "tag:boroughs+"
