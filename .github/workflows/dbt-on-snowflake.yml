@@ -47,6 +47,7 @@ jobs:
           authenticator = "SNOWFLAKE_JWT"
           private_key_path = "$HOME/sf_key.p8"
           EOF
+          chmod 0600 ~/.snowflake/config.toml
 
       # Optional but handy if the Dev database wasn't created yet
       - name: Ensure Dev database & schemas exist (idempotent)
