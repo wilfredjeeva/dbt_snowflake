@@ -61,6 +61,11 @@ jobs:
       - name: Vendor dbt packages into the project object
         run: dbt deps
 
+      - name: Debug Snowflake Connection
+        run: |
+          snow sql -c ci -q "SELECT CURRENT_ROLE(), CURRENT_DATABASE(), CURRENT_SCHEMA();"
+          snow sql -c ci -q "SHOW SCHEMAS IN DATABASE ANALYTICS_DEV;"
+
       - name: Deploy/Update dbt project object in Snowflake (Dev)
         run: snow dbt deploy "${{ env.DBT_PROJECT_NAME }}" --source . --profiles-dir . --force -c ci
 
