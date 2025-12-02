@@ -37,3 +37,4 @@ rsa_key*
 .env
 .env.local
 profiles.yml
+dbt_internal_packages/
