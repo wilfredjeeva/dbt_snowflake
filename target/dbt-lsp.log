@@ -1,0 +1,45 @@
+==================== 2025-11-28 08:06:45.068239 | 76c527af-87f1-4246-b20a-afafa5e6f955 ====================
+08:06:45.068347 [info ]: Starting dbt LSP server
+08:06:45.068381 [info ]: Connecting to LSP client on port 8000
+08:06:45.076098 [info ]: Successfully connected to LSP client
+08:06:45.076138 [info ]: Creating LSP service...
+08:06:45.121111 [info ]: Creating LSP server...
+08:06:45.121141 [info ]: Starting LSP server...
+08:06:46.926496 [warn ]: dbt1041: Found package-lock.yml file with out of date formatting, ignoring...
+08:06:46.989925 [info ]: Cached model count updated: 3 models (estimate)
+08:06:48.012694 [info ]: Cached model count updated: 3 models (accurate)
+08:06:48.911989 [error]: dbt1005: Configuration Error: 'SNOWFLAKE_JWT' for authenticator is not supported. If using authenticator, it must be set to exactly one of {'externalbrowser', 'oauth', 'username_password_mfa'}.
+(in models\silver\silver_boroughs.sql:14:7)
+(in dbt_internal_packages\dbt-adapters\macros\materializations\models\incremental\is_incremental.sql:7:34)
+  --> models\silver\silver_boroughs.sql:14:7
+08:06:48.938683 [info ]: Cached model count updated: 3 models (accurate)
+==================== 2025-11-28 08:26:06.432028 | b5d442cc-8b67-4d67-9220-a58e9eaed5e1 ====================
+08:26:06.432135 [info ]: Starting dbt LSP server
+08:26:06.432168 [info ]: Connecting to LSP client on port 8000
+08:26:06.439563 [info ]: Successfully connected to LSP client
+08:26:06.439590 [info ]: Creating LSP service...
+08:26:06.481403 [info ]: Creating LSP server...
+08:26:06.481456 [info ]: Starting LSP server...
+08:26:08.567806 [warn ]: dbt1041: Found package-lock.yml file with out of date formatting, ignoring...
+08:26:08.606337 [info ]: Cached model count updated: 3 models (estimate)
+08:26:08.919270 [info ]: Cached model count updated: 3 models (accurate)
+08:26:09.594775 [error]: dbt1005: Configuration Error: 'SNOWFLAKE_JWT' for authenticator is not supported. If using authenticator, it must be set to exactly one of {'externalbrowser', 'oauth', 'username_password_mfa'}.
+(in models\silver\silver_boroughs.sql:14:7)
+(in dbt_internal_packages\dbt-adapters\macros\materializations\models\incremental\is_incremental.sql:7:34)
+  --> models\silver\silver_boroughs.sql:14:7
+08:26:09.612076 [info ]: Cached model count updated: 3 models (accurate)
+==================== 2025-12-02 07:20:18.836455 | f7d78425-1c22-4fbb-8c27-849db7fcfd0f ====================
+07:20:18.841172 [info ]: Starting dbt LSP server
+07:20:18.843169 [info ]: Connecting to LSP client on port 8000
+07:20:18.869704 [info ]: Successfully connected to LSP client
+07:20:18.869750 [info ]: Creating LSP service...
+07:20:19.088503 [info ]: Creating LSP server...
+07:20:19.088555 [info ]: Starting LSP server...
+07:20:23.300675 [warn ]: dbt1041: Found package-lock.yml file with out of date formatting, ignoring...
+07:20:23.611888 [info ]: Cached model count updated: 3 models (estimate)
+07:20:24.524324 [info ]: Cached model count updated: 3 models (accurate)
+07:20:26.626669 [error]: dbt1005: Configuration Error: 'SNOWFLAKE_JWT' for authenticator is not supported. If using authenticator, it must be set to exactly one of {'externalbrowser', 'oauth', 'username_password_mfa'}.
+(in models\silver\silver_boroughs.sql:14:7)
+(in dbt_internal_packages\dbt-adapters\macros\materializations\models\incremental\is_incremental.sql:7:34)
+  --> models\silver\silver_boroughs.sql:14:7
+07:20:26.684791 [info ]: Cached model count updated: 3 models (accurate)

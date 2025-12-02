@@ -1,11 +1,27 @@
-
 version: 2
+
 models:
   - name: bronze_boroughs
+    description: Seeded boroughs standardized to bronze
     columns:
       - name: borough_id
         tests: [not_null, unique]
+      - name: borough_name
+        tests: [not_null]
+
   - name: silver_boroughs
+    description: Cleaned boroughs
     columns:
       - name: borough_id
         tests: [not_null, unique]
+      - name: borough_name
+        tests: [not_null]
+
+  - name: gold_borough_counts
+    description: Aggregated counts by borough
+    columns:
+      - name: borough_name
+        tests: [not_null]
+      - name: row_count
+        tests:
+          - not_null
