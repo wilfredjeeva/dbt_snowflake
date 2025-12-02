@@ -1,83 +1,71 @@
-
-name: dbt-on-snowflake
+name: dbt on Snowflake (dev)
 
 on:
-  workflow_dispatch:
-    inputs:
-      target:
-        description: "dbt target (dev/test)"
-        type: choice
-        options: [dev, test]
-        default: dev
-      selector:
-        description: "dbt selector (e.g. +models/silver/**)"
-        required: false
-        default: "+models"
-      command:
-        description: "dbt command (build/run/test)"
-        type: choice
-        options: [build, run, test]
-        default: build
-  repository_dispatch:
-    types: [adf_dbt]
+  push:
+    branches: ["main"] # run on push to main
+  workflow_dispatch: # allow manual runs from the Actions tab
 
-permissions:
-  contents: read
+env:
+  DBT_PROJECT_NAME: dbt_snowflake
+  DBT_TARGET: dev
 
 jobs:
-  run:
+  deploy-and-build:
     runs-on: ubuntu-latest
+    environment: dev # pull secrets from the 'dev' environment
 
     steps:
       - uses: actions/checkout@v4
 
-      # Install Snowflake CLI (v3.13+ for dbt on Snowflake)
-      - name: Setup Snowflake CLI
-        uses: snowflakedb/snowflake-cli-action@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          cli-version: "3.13.0"
-        env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
-          SNOWFLAKE_PRIVATE_KEY_B64: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_B64 }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          python-version: "3.11"
 
-      - name: Resolve params
-        id: p
+      - name: Install CLI + dbt tooling
         run: |
-          # prefer repository_dispatch payload if present
-          if [ -n "${{ github.event.client_payload.target }}" ]; then
-            echo "target=${{ github.event.client_payload.target }}" >> $GITHUB_OUTPUT
-          else
-            echo "target=${{ inputs.target || 'dev' }}" >> $GITHUB_OUTPUT
-          fi
-          if [ -n "${{ github.event.client_payload.selector }}" ]; then
-            echo "selector=${{ github.event.client_payload.selector }}" >> $GITHUB_OUTPUT
-          else
-            echo "selector=${{ inputs.selector || '+models' }}" >> $GITHUB_OUTPUT
-          fi
-          if [ -n "${{ github.event.client_payload.command }}" ]; then
-            echo "command=${{ github.event.client_payload.command }}" >> $GITHUB_OUTPUT
-          else
-            echo "command=${{ inputs.command || 'build' }}" >> $GITHUB_OUTPUT
-          fi
+          python -m pip install --upgrade pip
+          pip install --upgrade snowflake-cli dbt-core dbt-snowflake
 
-      - name: Deploy DBT PROJECT object
+      - name: Write Snowflake private key from secret
         run: |
-          # Use external access integration if provided to allow dbt deps to pull packages
-          EAI_ARG=""
-          if [ -n "${{ secrets.DBT_EXTERNAL_ACCESS_INTEGRATION }}" ]; then
-            EAI_ARG="--external-access-integration ${{ secrets.DBT_EXTERNAL_ACCESS_INTEGRATION }}"
-          fi
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY_B64 }}" | base64 -d > $HOME/sf_key.p8
+          chmod 600 $HOME/sf_key.p8
 
-          # Create or update the DBT PROJECT object named 'wcc_datahub'
-          snow dbt deploy wcc_datahub --source . --profiles-dir . --default-target ${{ steps.p.outputs.target }} --force $EAI_ARG
-
-      - name: Execute dbt on Snowflake
+      - name: Configure Snowflake CLI (connection 'ci')
         run: |
-          snow dbt execute wcc_datahub ${{ steps.p.outputs.command }} --select "${{ steps.p.outputs.selector }}" --target ${{ steps.p.outputs.target }}
+          mkdir -p ~/.snowflake
+          cat > ~/.snowflake/config.toml <<'EOF'
+          default_connection_name = "ci"
+          [connections.ci]
+          account = "${{ secrets.SNOWFLAKE_ACCOUNT }}"
+          user = "${{ secrets.SNOWFLAKE_USER }}"
+          role = "${{ secrets.SNOWFLAKE_ROLE }}"
+          warehouse = "${{ secrets.SNOWFLAKE_WAREHOUSE }}"
+          database = "${{ secrets.SNOWFLAKE_PROJECT_DB }}"
+          schema = "${{ secrets.SNOWFLAKE_PROJECT_SCHEMA }}"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_path = "$HOME/sf_key.p8"
+          EOF
 
-      - name: List project versions (debug)
-        run: snow dbt list --in schema public
+      # Optional but handy if the Dev database wasn't created yet
+      - name: Ensure Dev database & schemas exist (idempotent)
+        run: |
+          snow sql -c ci -q "create database if not exists ANALYTICS_DEV;
+                              create schema if not exists ANALYTICS_DEV.LANDING;
+                              create schema if not exists ANALYTICS_DEV.BRONZE;
+                              create schema if not exists ANALYTICS_DEV.SILVER;
+                              create schema if not exists ANALYTICS_DEV.GOLD;"
+
+      - name: Vendor dbt packages into the project object
+        run: dbt deps
+
+      - name: Deploy/Update dbt project object in Snowflake (Dev)
+        run: snow dbt deploy "${{ env.DBT_PROJECT_NAME }}" --source . --profiles-dir . --force -c ci
+
+      - name: Execute build inside Snowflake (Dev target)
+        run: |
+          # 'tag:boroughs+' selects seeds + bronze + silver + gold for your Boroughs example
+          snow dbt execute "${{ env.DBT_PROJECT_NAME }}" build \
+            --target "${{ env.DBT_TARGET }}" \
+            --select "tag:boroughs+" -c ci

@@ -1,0 +1,39 @@
+# dbt
+target/
+dbt_packages/
+logs/
+dbt_modules/
+
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Keys (IMPORTANT - never commit private keys!)
+*.pem
+*.p8
+*.key
+rsa_key*
+
+# Environment
+.env
+.env.local
+profiles.yml
