@@ -15,6 +15,7 @@ macro-paths: ["macros"]
 seeds:
   +database: ANALYTICS_DEV # for local/dev target
   +schema: LANDING
+  +tags: ["boroughs"]
 
 models:
   wcc_datahub:
